@@ -32,7 +32,6 @@ TEMPLATE_VERSION_FILE_NAME=".templateversionrc"
 TEMPLATE_SYNC_IGNORE_FILE_NAME=".templatesyncignore"
 TEMPLATE_REMOTE_GIT_HASH=$(git ls-remote "${SOURCE_REPO}" HEAD | awk '{print $1}')
 NEW_TEMPLATE_GIT_HASH=$(git rev-parse --short "${TEMPLATE_REMOTE_GIT_HASH}")
-NEW_BRANCH="chore/template_sync_${NEW_TEMPLATE_GIT_HASH}"
 
 echo "::group::Check new changes"
 echo "::debug::new Git HASH ${NEW_TEMPLATE_GIT_HASH}"
@@ -50,8 +49,6 @@ fi
 echo "::endgroup::"
 
 echo "::group::Pull template"
-echo "::debug::create new branch from default branch with name ${NEW_BRANCH}"
-git checkout -b "${NEW_BRANCH}"
 echo "::debug::pull changes from template"
 git pull "${SOURCE_REPO}" --allow-unrelated-histories --squash --strategy=recursive -X theirs
 echo "::endgroup::"
@@ -80,13 +77,5 @@ fi
 git commit -m "chore(template): merge template changes :up:"
 
 echo "::debug::push changes"
-git push --set-upstream origin "${NEW_BRANCH}"
-echo "::endgroup::"
-
-echo "::group::create pull request"
-gh pr create \
-  --title "upstream merge template repository" \
-  --body "Merge ${SOURCE_REPO_PATH} ${NEW_TEMPLATE_GIT_HASH}" \
-  -B "${UPSTREAM_BRANCH}" \
-  -l "${PR_LABELS}"
+git push
 echo "::endgroup::"
